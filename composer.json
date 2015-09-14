@@ -1,4 +1,8 @@
 {
+    "name": "n0ts/yahoo_business_browser",
+    "description": "Login to yahoo business page script",
+    "license": "MIT",
+    "keywords": [],
     "repositories": [
         {
             "type": "vcs",
@@ -11,8 +15,17 @@
             "url": "https://github.com/samacs/simple_html_dom/"
         }
     ],
+    "authors": [
+        {
+            "name": "Naoya Nakazawa",
+            "email": "me@n0ts.org"
+        }
+    ],
     "require": {
         "pear/HTTP_Request2": "dev-trunk",
         "shark/simple_html_dom": "dev-master"
+    },
+    "autoload": {
+        "classmap": [ "yahoo_business_browser.php" ]
     }
 }
