@@ -1,0 +1,18 @@
+{
+    "repositories": [
+        {
+            "type": "vcs",
+            "url": "https://github.com/pear/HTTP_Request2/",
+            "tags-path": "v2.2.1"
+
+        },
+        {
+            "type": "vcs",
+            "url": "https://github.com/samacs/simple_html_dom/"
+        }
+    ],
+    "require": {
+        "pear/HTTP_Request2": "dev-trunk",
+        "shark/simple_html_dom": "dev-master"
+    }
+}
