@@ -14,8 +14,7 @@
  * Class representing a HTTP request message
  * PEAR package should be installed
  */
-require_once 'HTTP/Request2.php';
-require_once 'simple_html_dom.php';
+require_once 'vendor/autoload.php';
 
 /**
  * Class login and scraping your business.yahoo.co.jp pages
@@ -23,6 +22,8 @@ require_once 'simple_html_dom.php';
  */
 class YahooBusinessBrowser
 {
+    const PARTNER_TOP_PAGE = 'https://pmc.business.yahoo.co.jp/biz/ptnr/';
+
     /*
      * HTTP_Request2 Class Object
      */
@@ -81,23 +82,15 @@ class YahooBusinessBrowser
      */
     function login()
     {
-        $login_url = 'https://login.bizmanager.yahoo.co.jp/login';
-        $login_params = '?url=https://pmc.business.yahoo.co.jp';
+        // get login page, redirect URL is 'Partner Management Center Top' page
+        $login_url = 'https://login.bizmanager.yahoo.co.jp/login?url=' . self::PARTNER_TOP_PAGE;
         $current_cookies = $this->cookies;
         $this->cookies = array();
-        if (!$this->getGetBody($login_url . $login_params)) {
+        if (!$this->getGetBody($login_url)) {
             return false;
         }
 
-        // get post params
-        preg_match_all(
-            '/<input type="hidden" name="(.*?)" value="(.*?)" ?>/',
-            $this->body,
-            $matches_post_params,
-            PREG_SET_ORDER
-        );
-
-        // find img tag src="bX.yahoo.co.jp"
+        // find beacon img tag src="bX.yahoo.co.jp"
         $beacon_url = '';
         $html = str_get_html($this->body);
         foreach ($html->find('img') as $img) {
@@ -112,10 +105,22 @@ class YahooBusinessBrowser
             return false;
         }
 
-        // get cookie
         if (!$this->getGetBody($beacon_url)) {
             return false;
         }
+
+        // once more get login page url with append beacon cookies
+        if (!$this->getGetBody($login_url)) {
+            return false;
+        }
+
+        // get post params
+        preg_match_all(
+            '/<input type="hidden" name="(.*?)" value="(.*?)" ?>/',
+            $this->body,
+            $matches_post_params,
+            PREG_SET_ORDER
+        );
 
         // login
         $post_data = array();
@@ -125,7 +130,7 @@ class YahooBusinessBrowser
         $post_data['user_name'] = $this->id;
         $post_data['password'] = $this->pass;
 
-        $this->getPostBody($login_url . $login_params, $post_data);
+        $this->getPostBody($login_url, $post_data);
 
         $response_cookies = $this->cookies;
 
@@ -175,7 +180,8 @@ class YahooBusinessBrowser
         return true;
     }
 
-    function getGetBody($url, $referer = '') {
+    function getGetBody($url, $referer = '')
+    {
         // clear request body
         $this->rq->setBody('');
 
@@ -203,7 +209,8 @@ class YahooBusinessBrowser
      *
      * @return header value
      */
-    function getResponseHeader($key) {
+    function getResponseHeader($key)
+    {
         $headers = $this->rs->getHeader();
         return isset($headers[$key]) ? $headers[$key] : '';
     }
@@ -219,13 +226,14 @@ class YahooBusinessBrowser
     {
         if (empty($response_cookies)) {
             $response_cookies = $this->rs->getCookies();
+            if (empty($response_cookies)) {
+                return false;
+            }
         }
-        if (empty($response_cookies)) {
-            return false;
-        }
-        for ($i=0; $i < count($response_cookies); $i++) {
+
+        for ($i = 0; $i < count($response_cookies); $i++) {
             $create = true;
-            for ($j=0; $j < count($this->cookies); $j++) {
+            for ($j = 0; $j < count($this->cookies); $j++) {
                 if ($this->cookies[$j]['name'] === $response_cookies[$i]['name']) {
                     $this->cookies[$j]['value'] = $response_cookies[$i]['value'];
                     $create = false;
