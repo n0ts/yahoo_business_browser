@@ -13,14 +13,30 @@ PHP 5.4
 HTTP_Request2 (pear install HTTP_Request2)
 
 
-Usage
+Installation
+----
+```
+$ composer install
+```
+
+Sample
 -----
 ```
-  $id = "<your id>";
-  $pass = "<your password>";
-  ybb = new YahooBusinessBrowser($id, $pass);
-  ybb->getGetBody('url');
+require 'yahoo_business_browser.php';
+
+$id = '<your id>';
+$pass = '<your password>;
+$ybb = new YahooBusinessBrowser($id, $pass);
+if (empty($ybb->cookies)) {
+    die('Could not login');
+}
+
+$content = $ybb->getGetBody(YahooBusinessBrowser::PARTNER_TOP_PAGE.'/DeliveryReport/index');
+if ($content) {
+    print_r($ybb->body);
+}
 ```
+
 
 Authors
 -------------------
